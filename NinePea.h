@@ -39,10 +39,9 @@
 	value |= buffer[index++] << 8; \
 
 // might have to change these depending on memory allocated
-#define MAX_IO 8192
-#define MAX_MSG 8192+128
+extern int MAX_IO;
+extern int MAX_MSG;
 #define MAX_WELEM 16
-#define MAX_PGMBUF 80
 #define NOTAG ~0
 
 /* 9P message types */

@@ -259,7 +259,7 @@ sysfatal(int code)
 	exit(code);
 }
 
-int main() {
+int main(int argc, char **argv) {
 	fs_fid_init(64);
 
 	// this is REQUIRED by proc9p (see below)
@@ -275,11 +275,14 @@ int main() {
 	callbacks.stat = fs_stat;
 	callbacks.wstat = fs_wstat;
 
-	unsigned char msg[MAX_MSG+1];
+	unsigned char *msg = malloc(MAX_MSG+1);
 	unsigned int msglen = 0;
 	unsigned int r = 0;
 
-	dev_name = "/dev/video0";
+	if (argc == 2)
+		dev_name = strdup(argv[1]);
+	else
+		dev_name = strdup("/dev/video0");
 
 	open_device();
 	init_device();
@@ -309,7 +312,10 @@ int main() {
 		// proc9p accepts valid 9P msgs of length msglen,
 		// processes them using callbacks->various(functions);
 		// returns variable out's msglen
+		r = MAX_MSG;
 		msglen = proc9p(msg, msglen, &callbacks);
+		if (r != MAX_MSG)
+			msg = realloc(msg, MAX_MSG+1);
 
 		write(1, msg, msglen);
 		fflush(stdout);

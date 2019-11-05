@@ -1,5 +1,8 @@
 #include "NinePea.h"
 
+int MAX_MSG = 8192;
+int MAX_IO = 8171;
+
 struct htable *fs_fids;
 
 int
@@ -143,8 +146,8 @@ proc9p(unsigned char *msg, unsigned long size, Callbacks *cb) {
 		get4(msg, i, ifcall.msize);
 		get2(msg, i, slen);
 
-		if (ifcall.msize > MAX_MSG)
-			ifcall.msize = MAX_MSG;
+		MAX_MSG = ifcall.msize;
+		MAX_IO = MAX_MSG - 19;
 
 		put4(msg, index, ifcall.msize);
 		put2(msg, index, slen);
