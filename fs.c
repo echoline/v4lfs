@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include "NinePea.h"
 #include "v4l.h"
 #include "jpeg.h"
@@ -9,6 +10,8 @@ char errstr[64];
 char Snone[] = "none";
 char Sroot[] = "/";
 char Sjpeg[] = "jpeg";
+unsigned long long last = 0;
+int jpeglen;
 
 enum {
 	Qroot = 0,
@@ -129,8 +132,9 @@ fs_clunk(Fcall *ifcall) {
 
 Fcall*
 fs_open(Fcall *ifcall) {
-	int len;
 	struct hentry *cur = fs_fid_find(ifcall->fid);
+	struct timeval tv;
+	unsigned long long t;
 
 	if (cur == NULL) {
 		ofcall.type = RError;
@@ -145,11 +149,16 @@ fs_open(Fcall *ifcall) {
 	if (cur->data == Qroot)
 		ofcall.qid.type = QTDIR;
 	if (cur->data == Qjpeg) {
-		read_frame();
-		len = compressjpg(RGB, 640, 480);
-		cur->aux = malloc(len);
-		memcpy(cur->aux, RGB, len);
-		cur->len = len;
+		gettimeofday(&tv, NULL);
+		t = tv.tv_sec * 1000000 + tv.tv_usec;
+		if ((t - last) > 66000) {
+			read_frame();
+			jpeglen = compressjpg(RGB, 640, 480);
+			last = t;
+		}
+		cur->aux = malloc(jpeglen);
+		memcpy(cur->aux, RGB, jpeglen);
+		cur->len = jpeglen;
 	}
 
 	return &ofcall;

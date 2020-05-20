@@ -454,6 +454,7 @@ void init_device(void)
 	struct v4l2_cropcap cropcap;
 	struct v4l2_crop crop;
 	struct v4l2_format fmt;
+	struct v4l2_control ctrl;
 
 	if (-1 == xioctl(fd, VIDIOC_QUERYCAP, &cap)) {
 		if (EINVAL == errno) {
@@ -549,6 +550,41 @@ void init_device(void)
 		init_userp(fmt.fmt.pix.sizeimage);
 		break;
 	}
+
+	memset(&ctrl, 0, sizeof(struct v4l2_control));
+	ctrl.id = V4L2_CID_AUTO_WHITE_BALANCE;
+	ctrl.value = 1;
+	if (-1 == xioctl(fd, VIDIOC_S_CTRL, &ctrl)){
+		perror("V4L2_CID_AUTO_WHITE_BALANCE");
+	}
+
+	memset(&ctrl, 0, sizeof(struct v4l2_control));
+	ctrl.id = V4L2_CID_AUTOGAIN;
+	ctrl.value = 1;
+	if (-1 == xioctl(fd, VIDIOC_S_CTRL, &ctrl)){
+		perror("V4L2_CID_AUTOGAIN");
+	}
+
+	memset(&ctrl, 0, sizeof(struct v4l2_control));
+	ctrl.id = V4L2_CID_AUTOBRIGHTNESS;
+	ctrl.value = 1;
+	if (-1 == xioctl(fd, VIDIOC_S_CTRL, &ctrl)){
+		perror("V4L2_CID_AUTOBRIGHTNESS");
+	}
+
+	memset(&ctrl, 0, sizeof(struct v4l2_control));
+	ctrl.id = V4L2_CID_HUE_AUTO;
+	ctrl.value = 1;
+	if (-1 == xioctl(fd, VIDIOC_S_CTRL, &ctrl)){
+		perror("V4L2_CID_HUE_AUTO");
+	}
+
+	memset(&ctrl, 0, sizeof(struct v4l2_control));
+	ctrl.id = V4L2_CID_CHROMA_AGC;
+	ctrl.value = 1;
+	if (-1 == xioctl(fd, VIDIOC_S_CTRL, &ctrl)){
+		perror("V4L2_CID_CHROMA_AGC");
+	}
 }
 
 void close_device(void)
@@ -587,107 +623,3 @@ void open_device(void)
 	RGB = (unsigned char*)malloc(1920 * 1080 * 3);
 }
 
-static void usage(FILE *fp, int argc, char **argv)
-{
-	fprintf(fp,
-		 "Usage: %s [options]\n\n"
-		 "Version 1.3\n"
-		 "Options:\n"
-		 "-d | --device name	 Video device name [%s]\n"
-		 "-h | --help					Print this message\n"
-		 "-m | --mmap					Use memory mapped buffers [default]\n"
-		 "-r | --read					Use read() calls\n"
-		 "-u | --userp				 Use application allocated buffers\n"
-		 "-o | --output				Outputs stream to stdout\n"
-		 "-f | --format				Force format to 640x480 YUYV\n"
-		 "-c | --count				 Number of frames to grab [%i]\n"
-		 "",
-		 argv[0], dev_name, frame_count);
-}
-
-static const char short_options[] = "d:hmruofc:";
-
-static const struct option
-long_options[] = {
-	{ "device", required_argument, NULL, 'd' },
-	{ "help",	 no_argument,			 NULL, 'h' },
-	{ "mmap",	 no_argument,			 NULL, 'm' },
-	{ "read",	 no_argument,			 NULL, 'r' },
-	{ "userp",	no_argument,			 NULL, 'u' },
-	{ "output", no_argument,			 NULL, 'o' },
-	{ "format", no_argument,			 NULL, 'f' },
-	{ "count",	required_argument, NULL, 'c' },
-	{ 0, 0, 0, 0 }
-};
-
-/*
-int main(int argc, char **argv)
-{
-	dev_name = "/dev/video0";
-
-	for (;;) {
-		int idx;
-		int c;
-
-		c = getopt_long(argc, argv,
-				short_options, long_options, &idx);
-
-		if (-1 == c)
-			break;
-
-		switch (c) {
-		case 0: // getopt_long() flag 
-			break;
-
-		case 'd':
-			dev_name = optarg;
-			break;
-
-		case 'h':
-			usage(stdout, argc, argv);
-			exit(EXIT_SUCCESS);
-
-		case 'm':
-			io = IO_METHOD_MMAP;
-			break;
-
-		case 'r':
-			io = IO_METHOD_READ;
-			break;
-
-		case 'u':
-			io = IO_METHOD_USERPTR;
-			break;
-
-		case 'o':
-			out_buf++;
-			break;
-
-		case 'f':
-			force_format++;
-			break;
-
-		case 'c':
-			errno = 0;
-			frame_count = strtol(optarg, NULL, 0);
-			if (errno)
-				errno_exit(optarg);
-			break;
-
-		default:
-			usage(stderr, argc, argv);
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	open_device();
-	init_device();
-	start_capturing();
-	mainloop();
-	stop_capturing();
-	uninit_device();
-	close_device();
-	fprintf(stderr, "\n");
-	return 0;
-}
-*/
