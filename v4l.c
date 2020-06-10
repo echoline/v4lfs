@@ -77,17 +77,17 @@ int CLIPVALUE(int x) {
 void YUV2RGB(const unsigned char y, const unsigned char u,const unsigned char v, unsigned char* r,
 			unsigned char* g, unsigned char* b)
 {
-	 const int y2 = (int)y;
-	 const int u2 = (int)u - 128;
-	 const int v2 = (int)v - 128;
-	 int r2 = y2 + ((v2 * 37221) >> 15);
-	 int g2 = y2 - (((u2 * 12975) + (v2 * 18949)) >> 15);
-	 int b2 = y2 + ((u2 * 66883) >> 15);
+	 const double y2 = (int)(y - 16) / 219.0;
+	 const double u2 = (int)(u - 128) / 224.0;
+	 const double v2 = (int)(v - 128) / 224.0;
+	 double r2 = y2 + v2;
+	 double g2 = y2 - 0.509 * v2 - 0.192 * u2;
+	 double b2 = y2 + u2;
 
 	 // Cap the values.
-	 *r = CLIPVALUE(r2);
-	 *g = CLIPVALUE(g2);
-	 *b = CLIPVALUE(b2);
+	 *r = CLIPVALUE((int)(r2 * 255));
+	 *g = CLIPVALUE((int)(g2 * 255));
+	 *b = CLIPVALUE((int)(b2 * 255));
 }
 
 static void process_image(unsigned char *p, int size)
